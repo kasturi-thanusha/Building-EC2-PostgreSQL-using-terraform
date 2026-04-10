@@ -1,133 +1,203 @@
-# 🚀 Terraform Project: Deploy EC2 with PostgreSQL (Automated Setup)
+# Terraform EC2 PostgreSQL — Automated Infrastructure Deployment
 
-This project demonstrates how to use **Terraform (Infrastructure as Code)** to automatically provision an **Ubuntu EC2 instance on AWS** and install **PostgreSQL database server** using a `user_data` automation script.  
-This setup is created for **personal learning and hands-on DevOps practice** using Terraform and AWS.
-
----
-
-## 📌 Project Objectives
-
-- Create and manage AWS infrastructure using **Terraform**
-- Provision an **Ubuntu EC2 instance**
-- Configure security groups (SSH + PostgreSQL access)
-- Automatically install and configure **PostgreSQL** on EC2 using `user_data`
-- Store infrastructure state using Terraform state files
-- Practice real DevOps workflows with infrastructure as code
+> Infrastructure as Code project demonstrating automated provisioning of an Ubuntu EC2 instance with PostgreSQL on AWS using Terraform.
 
 ---
 
-## 🏗️ Architecture Overview
+## Table of Contents
 
-Local Terraform (Ubuntu/Linux)
-|
-v
-AWS Cloud
-┌────────────────────────────┐
-│ EC2 Instance (Ubuntu) │
-│ - PostgreSQL installed │
-│ - user_data automation │
-│ - SSH enabled (Port 22) │
-└────────────────────────────┘
-│ Security Group Rules │
-│ - Allow SSH (22) │
-│ - Allow PostgreSQL (5432)│
-└────────────────────────────┘
-
-yaml
-Copy code
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Technologies](#technologies)
+- [Project Structure](#project-structure)
+- [Prerequisites](#prerequisites)
+- [Getting Started](#getting-started)
+- [Connecting to the Instance](#connecting-to-the-instance)
+- [Verifying PostgreSQL](#verifying-postgresql)
+- [Security & Best Practices](#security--best-practices)
+- [Learning Outcomes](#learning-outcomes)
 
 ---
 
-## 📎 Technologies Used
+## Overview
 
-| Tool / Service | Purpose |
-|----------------|---------|
-| Terraform | Infrastructure as Code |
-| AWS EC2 | Compute to host PostgreSQL |
-| Ubuntu | OS on EC2 |
-| PostgreSQL | Database Server |
-| AWS Security Groups | Network access control |
+This project uses **Terraform** to automate the provisioning of AWS infrastructure, including an Ubuntu EC2 instance with PostgreSQL pre-installed via a `user_data` bootstrap script. It is designed for hands-on DevOps learning, covering real-world workflows with Infrastructure as Code (IaC), AWS security groups, and version-controlled infrastructure management.
 
 ---
 
-## 📁 Project Structure
+## Architecture
 
+```
+Local Machine (Terraform CLI)
+          │
+          ▼
+    ┌─────────────────────────────────────┐
+    │           AWS Cloud                 │
+    │                                     │
+    │   ┌─────────────────────────────┐   │
+    │   │     EC2 Instance (Ubuntu)   │   │
+    │   │  ─ PostgreSQL (auto-install)│   │
+    │   │  ─ user_data bootstrap      │   │
+    │   │  ─ SSH access (Port 22)     │   │
+    │   └─────────────────────────────┘   │
+    │                                     │
+    │   ┌─────────────────────────────┐   │
+    │   │       Security Group        │   │
+    │   │  ─ Inbound: SSH (22)        │   │
+    │   │  ─ Inbound: PostgreSQL(5432)│   │
+    │   └─────────────────────────────┘   │
+    └─────────────────────────────────────┘
+```
+
+---
+
+## Technologies
+
+| Tool / Service       | Purpose                          |
+|----------------------|----------------------------------|
+| Terraform            | Infrastructure as Code (IaC)     |
+| AWS EC2              | Compute instance for PostgreSQL  |
+| Ubuntu               | Operating system on EC2          |
+| PostgreSQL           | Relational database server       |
+| AWS Security Groups  | Network access control           |
+| AWS CLI              | AWS credential configuration     |
+
+---
+
+## Project Structure
+
+```
 ec2-rds-terraform-demo/
 │
-├── main.tf # EC2 + Security Groups + PostgreSQL installation
-├── variables.tf # Variable definitions
-├── terraform.tfvars # Variable values (Not committed to GitHub)
-├── outputs.tf # Outputs (Public IP / DNS)
-└── .gitignore # To avoid sensitive files being pushed
-
-yaml
-Copy code
+├── main.tf              # EC2 instance, security groups, and user_data script
+├── variables.tf         # Input variable definitions
+├── terraform.tfvars     # Variable values (excluded from version control)
+├── outputs.tf           # Output values (public IP, DNS)
+└── .gitignore           # Excludes sensitive and generated files
+```
 
 ---
 
-## ⚙️ Prerequisites
+## Prerequisites
 
-Before running this project, ensure you have:
+Ensure the following are installed and configured before proceeding:
 
-- AWS Account
-- AWS CLI installed and configured (`aws configure`)
-- Terraform installed (`terraform -version`)
-- Ubuntu/Linux terminal
-- SSH key generated in AWS (e.g., `terraform.pem`)
+- [AWS Account](https://aws.amazon.com/)
+- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html) — configured via `aws configure`
+- [Terraform](https://developer.hashicorp.com/terraform/install) — verify with `terraform -version`
+- Ubuntu / Linux terminal
+- An SSH key pair created in AWS (e.g., `terraform.pem`)
 
 ---
 
-## 🚀 Deploy Instructions
+## Getting Started
 
-Run these commands inside the project directory:
+Run the following commands from within the project directory:
 
 ```bash
+# 1. Initialize the working directory and download providers
 terraform init
+
+# 2. Format configuration files
 terraform fmt
+
+# 3. Validate configuration syntax
 terraform validate
+
+# 4. Review the execution plan
+terraform plan
+
+# 5. Apply and provision infrastructure
 terraform apply
-Enter yes when prompted.
+```
 
-🔑 Connect to EC2
-After applying, get the public IP:
+> Enter `yes` when prompted to confirm the deployment.
 
-bash
-Copy code
+---
+
+## Connecting to the Instance
+
+After a successful `terraform apply`, retrieve the public IP:
+
+```bash
 terraform output ec2_public_ip
+```
+
 SSH into the EC2 instance:
 
-bash
-Copy code
+```bash
 chmod 400 terraform.pem
 ssh -i terraform.pem ubuntu@<ec2_public_ip>
-🗄️ Verify PostgreSQL Installation
-Inside EC2:
+```
 
-bash
-Copy code
+---
+
+## Verifying PostgreSQL
+
+Once connected to the instance, verify the PostgreSQL installation:
+
+```bash
+# Check installed version
 psql --version
+
+# Confirm the service is running
 sudo systemctl status postgresql
-(Optional) Connect to DB:
+```
 
-bash
-Copy code
+Optionally, connect to the database:
+
+```bash
 psql -U appuser -d appdb -h localhost
-🔐 Security & GitHub Best Practices
-⚠️ Never commit sensitive files!
+```
 
-Make sure .gitignore includes:
+---
 
-markdown
-Copy code
+## Security & Best Practices
+
+> ⚠️ **Never commit sensitive files to version control.**
+
+Ensure your `.gitignore` includes the following:
+
+```gitignore
+# Terraform state files
 *.tfstate
-terraform.tfvars
-.terraform/
-*.pem
-🎯 Learning Outcome
-By completing this project, you will understand:
+*.tfstate.backup
 
-✔ Infrastructure as Code (IaC)
-✔ Provisioning with Terraform
-✔ Automating configuration with user_data
-✔ Working with AWS EC2 + Security Groups
-✔ Real DevOps workflow (version control + GitHub)
+# Local variable values (may contain secrets)
+terraform.tfvars
+
+# Terraform working directory
+.terraform/
+.terraform.lock.hcl
+
+# SSH private keys
+*.pem
+```
+
+Additional recommendations:
+
+- Restrict Security Group inbound rules to known IP ranges instead of `0.0.0.0/0`
+- Rotate or revoke SSH key pairs after use in non-production environments
+- Use Terraform remote state (e.g., S3 + DynamoDB) for team collaboration
+
+---
+
+## Learning Outcomes
+
+By completing this project, you will gain practical experience with:
+
+- **Infrastructure as Code (IaC)** — managing cloud resources declaratively with Terraform
+- **EC2 Provisioning** — launching and configuring Ubuntu instances on AWS
+- **Bootstrap Automation** — using `user_data` scripts for post-launch configuration
+- **Network Security** — defining inbound/outbound rules with AWS Security Groups
+- **DevOps Workflow** — version-controlled infrastructure with Git and GitHub
+- **State Management** — understanding how Terraform tracks resource state
+
+---
+
+## Contributing
+
+This project is intended for personal learning. Feel free to fork and adapt it for your own DevOps practice.
+
+---
+
